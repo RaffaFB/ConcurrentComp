@@ -57,6 +57,7 @@ int main(int argc, char* argv[]) {
       }
    }
    //multiplicacao sequencial:
+   GET_TIME(inicio);
    for(int i = 0; i<dim; i++){
      for(int j = 0; j<dim; j++){
        for(int k = 0; k<dim; k++){
@@ -64,6 +65,9 @@ int main(int argc, char* argv[]) {
        }
      }
    }
+   GET_TIME(fim);
+   delta = fim - inicio;
+   printf("Tempo multiplicacao sequencial (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta);
 
    tid = (pthread_t*) malloc(sizeof(pthread_t)*nthreads);
    if(tid==NULL) {puts("ERRO--malloc"); return 2;}
@@ -72,6 +76,7 @@ int main(int argc, char* argv[]) {
 
 
    //criando a thread
+   GET_TIME(inicio);
    for(int i=0; i<nthreads; i++) {
       (args+i)->id = i;
       (args+i)->dim = dim;
@@ -79,6 +84,9 @@ int main(int argc, char* argv[]) {
          puts("ERRO--pthread_create"); return 3;
       }
    }
+   GET_TIME(fim);
+   delta = fim - inicio;
+   printf("Tempo multiplicacao concorrente (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta);
 
    for(int i=0; i<nthreads; i++) {
       pthread_join(*(tid+i), NULL);
