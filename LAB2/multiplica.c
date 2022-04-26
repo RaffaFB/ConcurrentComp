@@ -6,6 +6,7 @@
 int *mat1, *mat2;
 int *saidaSeq, *saidaConc;
 int nthreads;
+int x = 0;
 
 typedef struct{
    int id;
@@ -13,19 +14,17 @@ typedef struct{
 } tArgs;
 
 void * multiplica(void *arg) {
-   tArgs *args = (tArgs*) arg;
-   int i,j,k;
-   for(i = args->id; i<args->dim; i++){
-     for(j = args->id; j<args->dim; j++){
-       for(k = 0; k<args->dim; k++){
-         saidaConc[i*(args->dim)+j] += mat1[i*(args->dim)+k] * mat2[k*(args->dim)+j];
-       }
-       printf("%d\n", saidaConc[i*(args->dim)+j]);
-     }
-   }
-
-
-   pthread_exit(NULL);
+  tArgs *args = (tArgs*) arg;
+  int i,j,k;
+  for(i = args->id; i<args->dim; i+=nthreads){
+    for(j = 0; j<args->dim; j++){
+      for(k = 0; k<args->dim; k++){
+        saidaConc[i*(args->dim)+j] += mat1[i*(args->dim)+k] * mat2[k*(args->dim)+j];
+      }
+    printf("%d\n", saidaConc[i*(args->dim)+j]);
+    }
+  }
+  pthread_exit(NULL);
 }
 
 //thread principal
@@ -51,8 +50,8 @@ int main(int argc, char* argv[]) {
 
    for(int i=0; i<dim; i++) {
       for(int j=0; j<dim; j++){
-         mat1[i*dim+j] = rand() % 10;
-         mat2[i*dim+j] = rand() % 10;
+         mat1[i*dim+j] = 2;//rand() % 10;
+         mat2[i*dim+j] = 2;//rand() % 10;
          saidaSeq[i*dim+j] = 0;
          saidaConc[i*dim+j] = 0;
       }
