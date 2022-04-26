@@ -14,13 +14,17 @@ typedef struct{
 
 void * multiplica(void *arg) {
    tArgs *args = (tArgs*) arg;
-   for(int j = args->id; j<args->dim; j+=nthreads){
-    saidaConc[(args->id)*(args->dim)+j] = 0;
-    for(int k = args->id; k<args->dim; k+=nthreads){
-      saidaConc[(args->id)*(args->dim)+j] += mat1[(args->id)*(args->dim)+k] * mat2[k*(args->dim)+j];
-    }
-    printf("matriz[%d][%d] = %d\n" ,args->id, j, saidaConc[(args->id)*(args->dim)+j] );
-  }
+   int i,j,k;
+   for(i = args->id; i<args->dim; i++){
+     for(j = args->id; j<args->dim; j++){
+       for(k = 0; k<args->dim; k++){
+         saidaConc[i*(args->dim)+j] += mat1[i*(args->dim)+k] * mat2[k*(args->dim)+j];
+       }
+       printf("%d\n", saidaConc[i*(args->dim)+j]);
+     }
+   }
+
+
    pthread_exit(NULL);
 }
 
@@ -32,29 +36,30 @@ int main(int argc, char* argv[]) {
    double inicio, fim, delta;
 
    printf("Digite: a dimensao da matriz");
-   scanf("%d\n", &dim);
+   scanf("%d", &dim);
 
    nthreads = dim;
 
    mat1 = (int *) malloc(sizeof(int) * dim * dim);
    if (mat1 == NULL) {printf("ERRO--malloc\n"); return 2;}
-   mat2 = (int *) malloc(sizeof(int) * dim);
+   mat2 = (int *) malloc(sizeof(int) * dim * dim);
    if (mat2 == NULL) {printf("ERRO--malloc\n"); return 2;}
-   saidaSeq = (int *) malloc(sizeof(int) * dim);
+   saidaSeq = (int *) malloc(sizeof(int) * dim * dim);
    if (saidaSeq == NULL) {printf("ERRO--malloc\n"); return 2;}
-   saidaConc = (int *) malloc(sizeof(int) * dim);
+   saidaConc = (int *) malloc(sizeof(int) * dim * dim);
    if (saidaConc == NULL) {printf("ERRO--malloc\n"); return 2;}
 
    for(int i=0; i<dim; i++) {
       for(int j=0; j<dim; j++){
          mat1[i*dim+j] = rand() % 10;
          mat2[i*dim+j] = rand() % 10;
+         saidaSeq[i*dim+j] = 0;
+         saidaConc[i*dim+j] = 0;
       }
    }
    //multiplicacao sequencial:
    for(int i = 0; i<dim; i++){
      for(int j = 0; j<dim; j++){
-       saidaSeq[i*dim+j] = 0;
        for(int k = 0; k<dim; k++){
          saidaSeq[i*dim+j] += mat1[i*dim+k] * mat2[k*dim+j];
        }
@@ -70,6 +75,7 @@ int main(int argc, char* argv[]) {
    for(int i=0; i<nthreads; i++) {
       (args+i)->id = i;
       (args+i)->dim = dim;
+      printf("criando thread:\n");
       if(pthread_create(tid+i, NULL, multiplica, (void*) (args+i))){
          puts("ERRO--pthread_create"); return 3;
       }
