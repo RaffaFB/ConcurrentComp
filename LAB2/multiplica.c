@@ -7,6 +7,7 @@ int *mat1, *mat2;
 int *saidaSeq, *saidaConc;
 int nthreads, dim;
 
+
 typedef struct{
    int id;
    int dim;
@@ -25,12 +26,38 @@ void * multiplica(void *arg) {
   pthread_exit(NULL);
 }
 
+//multiplicaçao Sequencial
+void * multiplicaSequencial(int dim){
+
+  for(int i = 0; i<dim; i++){
+    for(int j = 0; j<dim; j++){
+      for(int k = 0; k<dim; k++){
+        saidaSeq[i*dim+j] += mat1[i*dim+k] * mat2[k*dim+j];
+      }
+    }
+  }
+
+  return saidaSeq;
+}
+
+//checa se os resultados são os mesmos
+void comparaMatrizes(int* saidaSeq, int* saidaConc){
+  for(int i = 0; i<dim; i++){
+    for(int j = 0; j<dim; j++){
+      if(saidaSeq[i*dim+j] =! saidaConc[i*dim+j]){
+        puts("ERRO--matrizes diferentes");
+        exit(-1);
+      }
+    }
+  }
+}
+
 //thread principal
 int main(int argc, char* argv[]) {
    int dim;
    pthread_t *tid;
    tArgs *args;
-   double inicio, fim, delta1, delta2, aceleracao;
+   double inicio, fim, aceleracao, delta1, delta2;
 
    if(argc<3) {
       printf("Digite: %s dimensao da matriz | numero de threads\n", argv[0]);
@@ -56,15 +83,11 @@ int main(int argc, char* argv[]) {
          saidaConc[i*dim+j] = 0;
       }
    }
-   //multiplicacao sequencial:
+
    GET_TIME(inicio);
-   for(int i = 0; i<dim; i++){
-     for(int j = 0; j<dim; j++){
-       for(int k = 0; k<dim; k++){
-         saidaSeq[i*dim+j] += mat1[i*dim+k] * mat2[k*dim+j];
-       }
-     }
-   }
+
+   multiplicaSequencial(dim);
+   
    GET_TIME(fim);
    delta1 = fim - inicio;
    printf("Tempo multiplicacao sequencial (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta1);
@@ -73,7 +96,6 @@ int main(int argc, char* argv[]) {
    if(tid==NULL) {puts("ERRO--malloc"); return 2;}
    args = (tArgs*) malloc(sizeof(tArgs)*nthreads);
    if(args==NULL) {puts("ERRO--malloc"); return 2;}
-
 
    //criando a thread
    GET_TIME(inicio);
@@ -84,6 +106,7 @@ int main(int argc, char* argv[]) {
          puts("ERRO--pthread_create"); return 3;
       }
    }
+
    for(int i=0; i<nthreads; i++) {
       pthread_join(*(tid+i), NULL);
    }
@@ -92,17 +115,10 @@ int main(int argc, char* argv[]) {
    printf("Tempo multiplicacao concorrente (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta2);
 
 
-   for(int i = 0; i<dim; i++){
-     for(int j = 0; j<dim; j++){
-       if(saidaSeq[i*dim+j] =! saidaConc[i*dim+j]){
-         puts("ERRO--matrizes diferentes");
-         return 4;
-       }
-     }
-   }
+   comparaMatrizes(saidaSeq, saidaConc);
+
    aceleracao = delta1/delta2;
    printf("ganho de desempenho: %lf / %lf = %lf\n", delta1, delta2, aceleracao);
-   printf("as matrizes são iguais!\n");
 
    free(mat1);
    free(mat2);
@@ -112,3 +128,4 @@ int main(int argc, char* argv[]) {
    free(tid);
    return 0;
  }
+
