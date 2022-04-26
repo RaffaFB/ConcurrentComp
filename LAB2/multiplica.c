@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
    int dim;
    pthread_t *tid;
    tArgs *args;
-   double inicio, fim, delta;
+   double inicio, fim, delta1, delta2, aceleracao;
 
    if(argc<3) {
       printf("Digite: %s dimensao da matriz | numero de threads\n", argv[0]);
@@ -66,8 +66,8 @@ int main(int argc, char* argv[]) {
      }
    }
    GET_TIME(fim);
-   delta = fim - inicio;
-   printf("Tempo multiplicacao sequencial (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta);
+   delta1 = fim - inicio;
+   printf("Tempo multiplicacao sequencial (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta1);
 
    tid = (pthread_t*) malloc(sizeof(pthread_t)*nthreads);
    if(tid==NULL) {puts("ERRO--malloc"); return 2;}
@@ -84,13 +84,13 @@ int main(int argc, char* argv[]) {
          puts("ERRO--pthread_create"); return 3;
       }
    }
-   GET_TIME(fim);
-   delta = fim - inicio;
-   printf("Tempo multiplicacao concorrente (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta);
-
    for(int i=0; i<nthreads; i++) {
       pthread_join(*(tid+i), NULL);
    }
+   GET_TIME(fim);
+   delta2 = fim - inicio;
+   printf("Tempo multiplicacao concorrente (dimensao %d) (nthreads %d): %lf\n", dim, nthreads, delta2);
+
 
    for(int i = 0; i<dim; i++){
      for(int j = 0; j<dim; j++){
@@ -100,6 +100,8 @@ int main(int argc, char* argv[]) {
        }
      }
    }
+   aceleracao = delta1/delta2;
+   printf("ganho de desempenho: %lf / %lf = %lf\n", delta1, delta2, aceleracao);
    printf("as matrizes são iguais!\n");
 
    free(mat1);
