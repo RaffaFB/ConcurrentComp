@@ -3,20 +3,21 @@
 #include<pthread.h>
 #include "timer.h"
 
-long int dim; //dimensao do vetor de entrada
-int nthreads; //numero de threads
-double *vetor; //vetor de entrada com dimensao dim
-float maior, menor;
+long int dim;
+int nthreads;
+double *vetor;
+double maior, menor;
+double *maiorConc, *menorConc;
 
 void * tarefa(void * arg){
   long int id = (long int) arg;
   long int i,j,aux;
-  double x[2];
   long int tamBloco = dim/nthreads;
   long int ini = id * tamBloco;
   long int fim;
   if(id == nthreads-1) fim = dim;
   else fim = ini + tamBloco;
+
   for(i = ini; i < fim; i++){
     for(j = ini; j < fim-i-1 ; j++){
       if(vetor[j] > vetor[j+1]){
@@ -26,9 +27,10 @@ void * tarefa(void * arg){
       }
     }
   }
-  x[0] = vetor[0];
-  x[1] = vetor[fim];
-  pthread_exit((void *) x);
+  menorConc[id] = vetor[ini];
+  maiorConc[id] = vetor[fim-1];
+
+  pthread_exit(NULL);
 }
 
 
@@ -41,14 +43,14 @@ double * preencheVetor(int dim){
      return 2;
   }
   for(i=0; i<dim; i++){
-     v[i] = ((float)rand()/(float)(RAND_MAX)) * 10.0;
-     printf("%lf\n", v[i]);
+     v[i] = ((float)rand()/(float)(RAND_MAX)) * 9.0;
   }
   return v;
 }
 
 void * maior_menor(double *v, int dim){
-  int i, j, aux;
+  int i, j;
+  double aux;
   for(i = 0; i < dim; i++){
     for(j = 0; j < dim-i-1 ; j++){
       if(v[j] > v[j+1]){
@@ -60,13 +62,13 @@ void * maior_menor(double *v, int dim){
   }
   maior = v[dim-1];
   menor = v[0];
+
 }
 
-
 int main(int argc, char const *argv[]) {
-  double ini, fim; 
+  double ini, fim, tempoSeq, tempoConc;
   pthread_t *tid;
-  double *retorno;
+  double x, y;
 
   if(argc < 3) {
       fprintf(stderr, "Digite: %s <dimensao do vetor> <numero threads>\n", argv[0]);
@@ -84,10 +86,23 @@ int main(int argc, char const *argv[]) {
 
   GET_TIME(ini);
   maior_menor(vetor, dim);
-  printf("maior: %lf, menor: %lf\n", maior, menor);
+  printf("maior: %lf, menor: %lf (sequencial)\n", maior, menor);
   GET_TIME(fim);
-  printf("Tempo sequencial:  %lf\n", fim-ini);
+  tempoSeq = fim-ini;
+  printf("Tempo sequencial:  %lf\n", tempoSeq);
 
+  maiorConc = (double*) malloc(sizeof(double)*nthreads);
+  if(maiorConc==NULL) {
+     fprintf(stderr, "ERRO--malloc\n");
+     return 2;
+  }
+  menorConc = (double*) malloc(sizeof(double)*nthreads);
+  if(menorConc==NULL) {
+     fprintf(stderr, "ERRO--malloc\n");
+     return 2;
+  }
+
+  GET_TIME(ini);
   tid = (pthread_t *) malloc(sizeof(pthread_t) * nthreads);
   if(tid==NULL) {
      fprintf(stderr, "ERRO--malloc\n");
@@ -102,12 +117,21 @@ int main(int argc, char const *argv[]) {
   }
 
   for(long int i=0; i<nthreads; i++) {
-     if(pthread_join(*(tid+i), (void**) &retorno)){
-        fprintf(stderr, "ERRO--pthread_create\n");
+     if(pthread_join(*(tid+i), NULL)){
+        fprintf(stderr, "ERRO--pthread_join\n");
         return 3;
      }
-     printf("%lf\n", x[0]);
   }
+  maior_menor(maiorConc, nthreads);
+  x = maior;
+  maior_menor(menorConc, nthreads);
+  y = menor;
+  printf("maior: %lf, menor: %lf (concorrente)\n", x, y);
+  GET_TIME(fim);
+  tempoConc = fim-ini;
+  printf("Tempo concorrente:  %lf\n", tempoConc);
+  printf("Ganho de desempenho: %lf\n", tempoSeq/tempoConc);
+
 
   return 0;
 }
