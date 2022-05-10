@@ -11,7 +11,7 @@ int * vetEntrada;
 float * vetSaida;
 
 void *tarefa(void* threadid){
-  int i, tid = *(int*) threadid;
+  int i, id = (int*) threadid;
   long int tamBloco = dim/nthreads;
   long int ini = id * tamBloco;
   long int fim;
@@ -20,15 +20,15 @@ void *tarefa(void* threadid){
 
   for(i=ini; i<fim; i++){
     pthread_mutex_lock(&mutex);
-    if ((ehPrimo(vetorEntrada[i])) == 1){
-      vetorSaida[i] = sqrt(vetEntrada[i]);
+    if ((ehPrimo(vetEntrada[i])) == 1){
+      vetSaida[i] = sqrt(vetEntrada[i]);
     }else{
-      vetorSaida[i] = vetorEntrada[i];
+      vetSaida[i] = vetEntrada[i];
     }
     printf("vetor concorrente %lf\n", vetSaida[i]);
     pthread_mutex_unlock(&mutex);
   }
-  pthread_exit();
+  pthread_exit(NULL);
 }
 
 int * preencheVetor(int dim){
@@ -87,7 +87,7 @@ int main(int argc, char const *argv[]) {
   processaPrimos(vetEntrada, vetSaida, dim);
 
   tid = (pthread_t*) malloc(sizeof(int)*nthreads);
-  f(tid==NULL) {
+  if(tid==NULL) {
      fprintf(stderr, "ERRO--malloc\n");
      return 2;
   }
@@ -107,3 +107,4 @@ int main(int argc, char const *argv[]) {
   }
   return 0;
 }
+
