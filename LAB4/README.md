@@ -3,6 +3,7 @@ Laboratório 4: Desempenho
 
 Para vetores com 10^5 posições:
 
+
 1 thread:
 tempo sequencial: 0.003723
 tempo concorrente: 0.008194
@@ -18,7 +19,9 @@ tempo sequencial: 0.003723
 tempo concorrente: 0.053177
 ganho de desempenho 0.070014
 
+
 Para vetores com 10^7 posições:
+
 
 1 thread:
 tempo sequencial: 0.233139
@@ -35,7 +38,9 @@ tempo sequencial: 0.285919
 tempo concorrente: 1.926849
 ganho de desempenho 0.148387
 
+
 Para vetores com 10^8 posições:
+
 
 1 thread:
 tempo sequencial: 2.240555
@@ -51,5 +56,7 @@ ganho de desempenho 0.205114
 tempo sequencial: 3.943604
 tempo concorrente: 24.763092
 ganho de desempenho 0.159253
+
+
 
 obs: Não houve ganho de desempenho na parte concorrente do código, como observado nos testes.
