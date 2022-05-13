@@ -20,7 +20,7 @@ void *tarefa(void* threadid){
   if(id == nthreads-1) fim = dim;
   else fim = ini + tamBloco;
 
-  printf("rodando thread %d\n", id);
+  //printf("rodando thread %d\n", id);
   for(i=ini; i<fim; i++){
 
     pthread_mutex_lock(&mutex);
