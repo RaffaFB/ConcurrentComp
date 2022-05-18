@@ -9,18 +9,17 @@ pthread_mutex_t x_mutex;
 pthread_cond_t x_cond;
 
 void* threadUm(void* arg){
-  printf(" x thread 1 == %d\n", x);
   pthread_mutex_lock(&x_mutex);
-  if(x > 3){
+  while(x < 4){
     pthread_cond_wait(&x_cond, &x_mutex);
   }
   pthread_mutex_unlock(&x_mutex);
   printf("''Volte sempre!''\n");
+
   pthread_exit(NULL);
 }
 
 void* threadDois(void* arg){
-  printf(" x thread 2 == %d\n", x);
   pthread_mutex_lock(&x_mutex);
   if (x == 0) {
      pthread_cond_wait(&x_cond, &x_mutex);
@@ -30,14 +29,13 @@ void* threadDois(void* arg){
 
   pthread_mutex_lock(&x_mutex);
   x++;
-  pthread_cond_signal(&x_cond);
+  pthread_cond_broadcast(&x_cond);
   pthread_mutex_unlock(&x_mutex);
 
   pthread_exit(NULL);
 }
 
 void* threadTres(void* arg){
-  printf(" x thread 3 == %d\n", x);
   pthread_mutex_lock(&x_mutex);
   if (x == 0) {
      pthread_cond_wait(&x_cond, &x_mutex);
@@ -47,14 +45,13 @@ void* threadTres(void* arg){
 
   pthread_mutex_lock(&x_mutex);
   x++;
-  pthread_cond_signal(&x_cond);
+  pthread_cond_broadcast(&x_cond);
   pthread_mutex_unlock(&x_mutex);
 
   pthread_exit(NULL);
 }
 
 void* threadQuatro(void* arg){
-  printf(" x thread 4 == %d\n", x);
   pthread_mutex_lock(&x_mutex);
   if (x == 0) {
      pthread_cond_wait(&x_cond, &x_mutex);
@@ -64,14 +61,13 @@ void* threadQuatro(void* arg){
 
   pthread_mutex_lock(&x_mutex);
   x++;
-  pthread_cond_signal(&x_cond);
+  pthread_cond_broadcast(&x_cond);
   pthread_mutex_unlock(&x_mutex);
 
   pthread_exit(NULL);
 }
 
 void* threadCinco(void* arg){
-  printf(" x thread 5 == %d\n", x);
   printf("''Seja bem-vindo!''\n");
 
   pthread_mutex_lock(&x_mutex);
